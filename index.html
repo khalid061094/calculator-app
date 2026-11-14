@@ -1,0 +1,429 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Calculator</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #141e30, #243b55);
+        }
+
+        .calculator {
+            width: 100%;
+            max-width: 370px;
+            padding: 25px;
+            border-radius: 25px;
+            background: #1c2535;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .display {
+            min-height: 125px;
+            padding: 20px 10px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+            overflow: hidden;
+            background: #111827;
+            border-radius: 15px;
+        }
+
+        .previous {
+            width: 100%;
+            min-height: 25px;
+            color: #8995a8;
+            font-size: 16px;
+            text-align: right;
+            overflow-wrap: anywhere;
+        }
+
+        .current {
+            width: 100%;
+            margin-top: 10px;
+            color: #ffffff;
+            font-size: 38px;
+            font-weight: bold;
+            text-align: right;
+            overflow-wrap: anywhere;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        button {
+            height: 65px;
+            border: none;
+            border-radius: 15px;
+            background: #303c50;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            background: #43516a;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .operator {
+            background: #f59e0b;
+            color: #ffffff;
+        }
+
+        .operator:hover {
+            background: #d97706;
+        }
+
+        .utility {
+            background: #526178;
+        }
+
+        .utility:hover {
+            background: #64748b;
+        }
+
+        .equals {
+            background: #10b981;
+            color: white;
+            grid-column: span 2;
+        }
+
+        .equals:hover {
+            background: #059669;
+        }
+
+        .zero {
+            grid-column: span 2;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #8290a5;
+            font-size: 12px;
+        }
+
+        @media (max-width: 400px) {
+            .calculator {
+                padding: 18px;
+            }
+
+            button {
+                height: 60px;
+                font-size: 20px;
+            }
+
+            .current {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="calculator">
+
+    <div class="display">
+        <div class="previous" id="previous"></div>
+        <div class="current" id="current">0</div>
+    </div>
+
+    <div class="buttons">
+
+        <button class="utility" onclick="clearCalculator()">C</button>
+        <button class="utility" onclick="backspace()">⌫</button>
+        <button class="utility" onclick="percentage()">%</button>
+        <button class="operator" onclick="chooseOperator('/')">÷</button>
+
+        <button onclick="appendNumber('7')">7</button>
+        <button onclick="appendNumber('8')">8</button>
+        <button onclick="appendNumber('9')">9</button>
+        <button class="operator" onclick="chooseOperator('*')">×</button>
+
+        <button onclick="appendNumber('4')">4</button>
+        <button onclick="appendNumber('5')">5</button>
+        <button onclick="appendNumber('6')">6</button>
+        <button class="operator" onclick="chooseOperator('-')">−</button>
+
+        <button onclick="appendNumber('1')">1</button>
+        <button onclick="appendNumber('2')">2</button>
+        <button onclick="appendNumber('3')">3</button>
+        <button class="operator" onclick="chooseOperator('+')">+</button>
+
+        <button class="zero" onclick="appendNumber('0')">0</button>
+        <button onclick="appendDecimal()">.</button>
+        <button class="equals" onclick="calculate()">=</button>
+
+    </div>
+
+    <div class="footer">
+        Keyboard Supported | Modern Calculator
+    </div>
+
+</div>
+
+<script>
+
+    let currentInput = "0";
+    let previousInput = "";
+    let operator = null;
+    let resetInput = false;
+
+    const currentDisplay = document.getElementById("current");
+    const previousDisplay = document.getElementById("previous");
+
+    // Update calculator display
+    function updateDisplay() {
+        currentDisplay.textContent = currentInput;
+
+        if (operator !== null) {
+            previousDisplay.textContent =
+                previousInput + " " + getOperatorSymbol(operator);
+        } else {
+            previousDisplay.textContent = "";
+        }
+    }
+
+    // Convert operator into display symbol
+    function getOperatorSymbol(op) {
+        const symbols = {
+            "+": "+",
+            "-": "−",
+            "*": "×",
+            "/": "÷"
+        };
+
+        return symbols[op];
+    }
+
+    // Enter numbers
+    function appendNumber(number) {
+
+        if (currentInput === "Error") {
+            currentInput = "0";
+        }
+
+        if (resetInput) {
+            currentInput = number;
+            resetInput = false;
+        } else if (currentInput === "0") {
+            currentInput = number;
+        } else if (currentInput.length < 15) {
+            currentInput += number;
+        }
+
+        updateDisplay();
+    }
+
+    // Enter decimal point
+    function appendDecimal() {
+
+        if (currentInput === "Error") {
+            currentInput = "0";
+        }
+
+        if (resetInput) {
+            currentInput = "0.";
+            resetInput = false;
+        } else if (!currentInput.includes(".")) {
+            currentInput += ".";
+        }
+
+        updateDisplay();
+    }
+
+    // Select mathematical operator
+    function chooseOperator(op) {
+
+        if (currentInput === "Error") return;
+
+        if (operator !== null && !resetInput) {
+            calculate();
+            if (currentInput === "Error") return;
+        }
+
+        previousInput = currentInput;
+        operator = op;
+        resetInput = true;
+
+        updateDisplay();
+    }
+
+    // Perform calculation
+    function calculate() {
+
+        if (operator === null || resetInput) return;
+
+        const first = parseFloat(previousInput);
+        const second = parseFloat(currentInput);
+
+        let result;
+
+        switch (operator) {
+
+            case "+":
+                result = first + second;
+                break;
+
+            case "-":
+                result = first - second;
+                break;
+
+            case "*":
+                result = first * second;
+                break;
+
+            case "/":
+                if (second === 0) {
+                    currentInput = "Error";
+                    previousInput = "";
+                    operator = null;
+                    resetInput = true;
+                    updateDisplay();
+                    return;
+                }
+
+                result = first / second;
+                break;
+        }
+
+        if (!Number.isFinite(result)) {
+            currentInput = "Error";
+        } else {
+            result = Number(result.toPrecision(12));
+            currentInput = String(result);
+        }
+
+        previousInput = "";
+        operator = null;
+        resetInput = true;
+
+        updateDisplay();
+    }
+
+    // Percentage calculation
+    function percentage() {
+
+        if (currentInput === "Error") return;
+
+        const value = parseFloat(currentInput);
+
+        currentInput = String(value / 100);
+
+        resetInput = false;
+
+        updateDisplay();
+    }
+
+    // Clear calculator
+    function clearCalculator() {
+
+        currentInput = "0";
+        previousInput = "";
+        operator = null;
+        resetInput = false;
+
+        updateDisplay();
+    }
+
+    // Delete last digit
+    function backspace() {
+
+        if (currentInput === "Error" || resetInput) {
+            currentInput = "0";
+            resetInput = false;
+        } else {
+            currentInput = currentInput.slice(0, -1);
+
+            if (currentInput === "" || currentInput === "-") {
+                currentInput = "0";
+            }
+        }
+
+        updateDisplay();
+    }
+
+    // Keyboard support
+    document.addEventListener("keydown", function(event) {
+
+        const key = event.key;
+
+        if (key >= "0" && key <= "9") {
+            appendNumber(key);
+        }
+
+        else if (key === ".") {
+            appendDecimal();
+        }
+
+        else if (key === "+") {
+            chooseOperator("+");
+        }
+
+        else if (key === "-") {
+            chooseOperator("-");
+        }
+
+        else if (key === "*") {
+            chooseOperator("*");
+        }
+
+        else if (key === "/") {
+            event.preventDefault();
+            chooseOperator("/");
+        }
+
+        else if (key === "Enter" || key === "=") {
+            event.preventDefault();
+            calculate();
+        }
+
+        else if (key === "Backspace") {
+            backspace();
+        }
+
+        else if (key === "Escape") {
+            clearCalculator();
+        }
+
+        else if (key === "%") {
+            percentage();
+        }
+
+    });
+
+    // Initial display
+    updateDisplay();
+
+</script>
+
+</body>
+</html>
